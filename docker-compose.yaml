@@ -1,0 +1,61 @@
+version: '3.8'
+services:
+  # npm:
+  #   build: 
+  #    context: ./
+  #    dockerfile: Dockerfile
+  #   stdin_open: true
+  #   tty: true
+  #   volumes:
+  #   # bindind local to container app
+  #     - ./:/app
+  mongodb:
+    image: 'mongo'
+ 
+
+   
+    volumes:
+      - data:/data/db
+      - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    env_file:
+      - ./env/mongo.env
+ 
+ 
+  backend:
+    build: 
+     context: ./backend
+     dockerfile: backend.dockerfile
+   
+     
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    env_file:
+      - ./env/backend.env
+    depends_on:
+      - mongodb
+    ports:
+      - '3001:3001'
+  frontend:
+    build:
+    # build: ../backend alternative
+     context: ./frontend
+     dockerfile: frontend.dockerfile
+    ports:
+      - '3000:3000'
+    volumes:
+    # instant changes in our end are reflected in running container
+      - ./frontend/src:/app/src
+      - /app/node_modules
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+   
+     
+    
+
+
+volumes:
+ data:
+   
